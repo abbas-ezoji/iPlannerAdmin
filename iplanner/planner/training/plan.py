@@ -10,7 +10,7 @@ import uuid
 import random
 import pyodbc
 import math
-import clustering
+import utils
 from ga_numpy import GeneticAlgorithm as ga
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import create_engine
@@ -192,8 +192,8 @@ engine = create_engine('mssql+pyodbc://{}:{}@{}/{}?driver=SQL+Server' \
 ###############################################################################
 '''                             parameters                            '''
 ###############################################################################
-df_cities = pd.read_sql_query('''select * from City                                 
-                                order by id
+df_cities = pd.read_sql_query('''select Id, Name, Lat,Long from City                                 
+                                order by Id
                               ''',
                        con=engine)
 
@@ -223,11 +223,17 @@ for city in cities:
     ###############################################################################
     '''                             Fetch data from db                          '''
     ###############################################################################
-    df_city_total = pd.read_sql_query('''SELECT * FROM 
+    df_city_total = pd.read_sql_query('''SELECT Id
+                                              ,VisitTimeFrom
+                                              ,VisitTimeTo
+                                              ,VisitDuration
+                                              ,AttractionType
+                                              ,iPlannerRate
+                                              ,Lat,Long
+                                          FROM 
                               Attraction WHERE AttractionType=0
                               AND CityId = {}'''.format(city),
-                           con=engine)
-    df_city_total = df_city_total.drop(['FullTitle', 'Address', 'Description','Point'], axis=1)
+                           con=engine)   
     
     df_city_total['rate'] = df_city_total['iPlannerRate']*100
     
@@ -239,8 +245,8 @@ for city in cities:
                            plan_distance_mat
                          WHERE
                            origin_id in 
-                           (SELECT id FROM Attraction
-                            WHERE CityId = {} AND Attractiontype=0)
+                           (SELECT Id FROM Attraction
+                            WHERE CityId = {} AND AttractionType=0)
                            '''.format(city)
     ###############################################################################
     '''                  Create dist_mat, Const and meta_data                   '''
@@ -339,8 +345,8 @@ for city in cities:
                 X = np.array(df_city.loc[:,['Id', 'iPlannerRate', 'Lat', 'Long']].values, 
                          dtype=float)
                 
-                clustering.plot_2d(X)
-                clustering.plot_3d(X)
+                utils.plot_2d(X)
+                utils.plot_3d(X)
                 random_state = day
                 # (cluster_labels, 
                 #  cluster_centers, 
