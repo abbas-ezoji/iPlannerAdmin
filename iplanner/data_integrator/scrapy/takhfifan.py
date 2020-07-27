@@ -24,13 +24,16 @@ engine = create_engine('mssql+pyodbc://{}:{}@{}/{}?driver=SQL+Server' \
     
 cities = {116:'tehran',136:'mashhad',71:'isfahan',73:'karaj',361:'kish',
           296:'rasht',1:'tabriz'}
-categories = {6:'restaurants-cafes'} #'recreational-sports', 'recreational-sports'education art-culture beauty-cosmetics services
+categories = {6:'restaurants-cafes', 11:'art-culture',
+              15:'education', 10:'recreational-sports',
+              21:'beauty-cosmetics',26:'health-medical',
+              33:'services'}
 
 for city_key, city in cities.items():   
     print('City: ' + city)
     for category_key, category in categories.items(): 
         print('category: ' + category)
-        offset = 0
+        offset = 66
         limit = 33
         url = "https://takhfifan.com/v4/api/magento/products?" + \
             f"filters[category]={category}&filters[city]={city}&limit={limit}&offset={offset}&"
@@ -40,7 +43,7 @@ for city_key, city in cities.items():
             
             data_json = json.loads(data_str)
             data = data_json.get('data')
-            if len(data)==0:
+            if data is None:
                 break
             meta_data = data_json.get('meta')
             
@@ -117,9 +120,9 @@ for city_key, city in cities.items():
                 Active = 1 if data_attrs.get('can_use_now') else 0
                 
                 ExternalProductId = data_attrs.get('protuct_id') if data_attrs.get('protuct_id') else 0
-                CityId = 1
+                CityId = city_key
                 SubCategoryId = 1
-                CategoryId = 1
+                CategoryId = category_key
                 iPlannerRate = 0
                 UserRate = Rate
                 with engine.connect() as con:
@@ -227,5 +230,6 @@ for city_key, city in cities.items():
                     con.execute(query)
                     print('ExternalId: ' + str(ExternalId))
                 
-            offset += limit
+            # offset += limit
             print('offset: ' + str(offset))
+            break
