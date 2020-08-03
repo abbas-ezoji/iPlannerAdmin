@@ -13,7 +13,7 @@ USER = 'sa'
 PASSWORD = 'xZCtQxjK3z9A'
 HOST = '185.10.72.91,1886'
 PORT = '1433'
-NAME = 'planning'
+NAME = 'iPlannerWebApi_new'
 engine = create_engine('mssql+pyodbc://{}:{}@{}/{}?driver=SQL+Server' \
                        .format(USER,
                                PASSWORD,
@@ -21,40 +21,29 @@ engine = create_engine('mssql+pyodbc://{}:{}@{}/{}?driver=SQL+Server' \
                                NAME
                                ))
 
-df = pd.read_sql_query('SELECT * FROM safarzoon_attraction',con=engine)
-df = df.drop(['image'], axis=1)
+df = pd.read_sql_query('SELECT Id,FullTitle,Description FROM Attraction',con=engine)
+tags_df = pd.read_sql_query('SELECT Id, Title FROM Tag', con=engine)
 
-df_city = df
-
-metadata = MetaData()
-atttraction_tag = Table('safarzoon_attractions_tags', metadata,
-                      Column('id', Integer, primary_key=True),
-                      Column('attractions_id', Integer),
-                      Column('tags_id', Integer),
-                    )
-
-metadata.create_all(engine)
-
-describtions = np.array(df_city.loc[:,['id', 'fullTitle', 'description','type']].values)
-tags = pd.read_sql_query('SELECT id, title FROM plan_tags', con=engine)
+describtions = np.array(df.values)
 
 data = []
 for desc in describtions:
-    if desc[3]>0:
+    if len(desc[2])<3:
         continue
+    print(desc[0])
     fulltile_txt = np.array(word_tokenize(desc[1]))
     description_txt = np.array(word_tokenize(desc[2]))
     fulltext = np.concatenate((fulltile_txt, description_txt))
     attarction_id = desc[0]    
-    msk = np.isin(tags['title'],fulltext)
-    tag_ids = tags[msk]['id']
+    msk = np.isin(tags_df['Title'],fulltext)
+    tag_ids = tags_df[msk]['Id']
     for tag_id in tag_ids:
         data.append([attarction_id, tag_id])        
 
-with engine.connect() as con:
-    for i,d in enumerate(data):
-        query = 'INSERT INTO safarzoon_attractions_tags(attractions_id, tags_id) VALUES ({}, {})'.format(d[0], d[1])        
-        con.execute(query)  
+# with engine.connect() as con:
+#     for i,d in enumerate(data):
+#         query = 'INSERT INTO safarzoon_attractions_tags(attractions_id, tags_id) VALUES ({}, {})'.format(d[0], d[1])        
+#         con.execute(query)  
 
 
 

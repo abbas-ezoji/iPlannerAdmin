@@ -409,9 +409,10 @@ class GeneticAlgorithm(object):
         self.current_generation_count = 1
         self.create_first_generation()       
         for g in range(1, self.generations):
-            #print('---------- Start ---------------')            
+            #print('---------- Start ---------------')  
+            gene = self.current_generation
             print('generation: ' +str(g) + ' - cost: ' +
-                  str(self.current_generation[0].fitness)) 
+                  str(gene[0].fitness)) 
             self.current_generation_count += 1                       
             self.create_next_generation()  
          
@@ -450,6 +451,7 @@ class Chromosome(object):
         """Initialise the Chromosome."""
         self.genes = genes
         self.fitness = 0
+        self.selection_cost = 0
         self.parent_fitness = 0
         self.life_cycle = 0
         self.fitness_const_count = 0
@@ -470,10 +472,11 @@ class Chromosome(object):
         return repr((self.fitness, self.genes))
     def set_fitness(self, fitness, generation): 
         life_cycle = self.life_cycle   
-                  
+        
+        alpha = random.randint(1, life_cycle)
         coh_eff_chromsom = (life_cycle 
                             *
-                            ((1- math.exp(-1/generation))+1)
+                            ((1- math.exp(-alpha/generation))+1)
 
                             )
         
@@ -482,8 +485,9 @@ class Chromosome(object):
         # c_current_generation_count = generation
         # if c_cycle > 1:
         #     c_cycle =  self.life_cycle
-            
-        self.fitness =  coh_eff_chromsom * fitness
+        
+        self.fitness = fitness
+        self.selection_cost = coh_eff_chromsom * fitness
         
         if self.parent_fitness == self.fitness :
             self.fitness_const_count += 1

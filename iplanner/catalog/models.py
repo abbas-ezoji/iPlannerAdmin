@@ -460,6 +460,9 @@ class TagCategory(models.Model):
         managed = True
         db_table = 'TagCategory'
 
+    def __str__(self):
+        return self.title
+
 
 class Tag(models.Model):
     id = models.AutoField(db_column='Id', primary_key=True)
@@ -936,9 +939,9 @@ class TravelType(models.Model):
 
 
 class DistanceMatrix(models.Model):
-    origin = models.ForeignKey(Attraction, related_name='distance_mat', on_delete=models.CASCADE)
-    destination = models.ForeignKey(Attraction, related_name='destination', on_delete=models.CASCADE)
-    travel_type = models.ForeignKey(TravelType, on_delete=models.CASCADE)
+    origin = models.ForeignKey(Attraction, related_name='distance_mat', on_delete=models.DO_NOTHING)
+    destination = models.ForeignKey(Attraction, related_name='destination', on_delete=models.DO_NOTHING)
+    travel_type = models.ForeignKey(TravelType, on_delete=models.DO_NOTHING)
     ecl_dist = models.FloatField('Euclidean Distance', null=True, blank=True, )
     len_meter = models.FloatField('Lenght Of Meters', null=True, blank=True)
     len_time = models.FloatField('Lenght Of Time', null=True, blank=True)
@@ -1009,8 +1012,10 @@ class Plan(models.Model):
     dist_len = models.FloatField('Length of distance times', null=True, blank=True)
     points_len = models.IntegerField('Count of points used', null=True, blank=True)
     duration_len = models.FloatField('Length of duration points', null=True, blank=True)
-    tags = models.CharField(max_length=1000, null=True, blank=True)
+    tags = models.ManyToManyField(Tag, null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
+    type = models.ForeignKey(Tag, related_name='type', default=311, on_delete=models.CASCADE)
+    tag_category = models.ForeignKey(TagCategory, null=True, blank=True, on_delete=models.CASCADE)
 
     # first_latt = models.DecimalField('Latitude', null=True, blank=True, max_digits=9, decimal_places=6)
     # first_long = models.DecimalField('Longitude', null=True, blank=True, max_digits=9, decimal_places=6)

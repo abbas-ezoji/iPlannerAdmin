@@ -63,9 +63,9 @@ class AirportAdmin(admin.ModelAdmin):
 
 
 class AttractionAdmin(admin.ModelAdmin):
-    list_display = ('title', 'city', 'iplanner_rate',)
+    list_display = ('title', 'city', 'iplanner_rate', )
     list_filter = ('city__province__country__name', 'city__province__name', 'city__name',
-                   'full_title', 'type')
+                   'full_title', 'type', 'tag',)
 
 
 class EventAdmin(admin.ModelAdmin):
@@ -86,10 +86,9 @@ class PlanDetailsAdminInline(admin.TabularInline):
 
 
 class PlanAdmin(admin.ModelAdmin):
-    list_display = ('city', 'present_id','cost_fullTime', 'cost_lengthTime', 'cost_countPoints', 'cost_minRqTime',
-                    'cost_rate', 'tags')
-    list_filter = ('city__name', 'tags', 'all_days', 'cost_lengthTime', 'cost_countPoints', 'cost_minRqTime',)
-    inlines = [PlanDetailsAdminInline]
+    list_display = ('city', 'all_days', 'present_id', 'cost_rate', 'tag_category')
+    list_filter = ('city__name', 'all_days', 'tag_category__title', )
+    # inlines = [PlanDetailsAdminInline]
 
 
 class TravelTypeAdmin(admin.ModelAdmin):
@@ -102,6 +101,11 @@ class DistanceMatrixAdmin(admin.ModelAdmin):
     list_display = [field.name for field in DistanceMatrix._meta.get_fields()]
     list_filter = ('origin__city__province__country__name', 'origin__city__province__name', 'origin__city__name',
                    'origin__title', 'destination__title', 'travel_type__title')
+
+
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('title', 'category',)
+    list_filter = ('title', 'category__title')
 
 
 admin.site.register(Country, CountryAdmin)
@@ -122,3 +126,4 @@ admin.site.register(TravelType, TravelTypeAdmin)
 admin.site.register(DistanceMatrix, DistanceMatrixAdmin)
 admin.site.register(Plan, PlanAdmin)
 admin.site.register(PlanDetails, PlanDetailsAdmin)
+admin.site.register(Tag, TagAdmin)

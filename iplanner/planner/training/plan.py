@@ -192,15 +192,17 @@ engine = create_engine('mssql+pyodbc://{}:{}@{}/{}?driver=SQL+Server' \
 ###############################################################################
 '''                             parameters                            '''
 ###############################################################################
-df_cities = pd.read_sql_query('''select Id, Name, Lat,Long from City                                 
+city_id = 0
+df_cities = pd.read_sql_query('''select Id, Name, Lat,Long from City
+                                where (Id = {} or 0={})
                                 order by Id
-                              ''',
+                              '''.format(city_id,city_id),
                        con=engine)
 
 cities = np.array(df_cities['Id'].values, dtype=int)
 
 meta_data = []
-population_size = 50
+population_size = 60
 generations = 30
 
 start_time = 420
@@ -219,20 +221,29 @@ ga = ga(seed_data=meta_data,
 ga.fitness_function = fitness
 
 for city in cities:
+    
+    tag_cat_id = 1
 
     ###############################################################################
     '''                             Fetch data from db                          '''
     ###############################################################################
-    df_city_total = pd.read_sql_query('''SELECT Id
-                                              ,VisitTimeFrom
-                                              ,VisitTimeTo
-                                              ,VisitDuration
-                                              ,AttractionType
-                                              ,iPlannerRate
-                                              ,Lat,Long
-                                          FROM 
-                              Attraction WHERE AttractionType=0
-                              AND CityId = {}'''.format(city),
+    df_city_total = pd.read_sql_query('''
+                                      SELECT DISTINCT
+                                    	   A.Id
+                                          ,VisitTimeFrom
+                                          ,VisitTimeTo
+                                          ,VisitDuration
+                                          ,AttractionType
+                                          ,iPlannerRate
+                                          ,Lat,Long
+                                    FROM  
+                                    Attraction A 
+                                    LEFT JOIN  AttractionTag ATG ON A.Id = ATG.attraction_id
+                                    LEFT JOIN Tag T ON T.Id = ATG.tag_id
+                                    WHERE AttractionType=0 
+                                    AND (T.CategoryId = {} OR 0={}) 
+                                    AND CityId = {}
+                                      '''.format(tag_cat_id,tag_cat_id,city),
                            con=engine)   
     
     df_city_total['rate'] = df_city_total['iPlannerRate']*100
@@ -304,9 +315,13 @@ for city in cities:
             coh_dffRqTime  = 0.1
             coh_dffVisTime  = 0.1
             
-            coh_lntm  = 0.65
-            coh_cnt   = 0.05
-            coh_rate = 0.30
+            coh_lntms  = [0.2, 0.4, 0.6, 0.8, 0.0]
+            coh_cnts   = [0.8, 0.2, 0.4, 0.0, 0.6]
+            coh_rates =  [0.0, 0.4, 0.0, 0.2, 0.4]
+            
+            coh_lntm  = coh_lntms[i]
+            coh_cnt   = coh_cnts[i]
+            coh_rate =  coh_rates[i]
             
             plan = []
             train_time = gmtime()
@@ -424,13 +439,7 @@ for city in cities:
             
                 diff_full_time = end_plan - end_time
                 
-                cost =((coh_fultm*cost_fultm) + 
-                           (coh_lntm*cost_lntm) + 
-                           (coh_cnt*cost_cnt) + 
-                           (coh_dffRqTime*cost_rq_time)+
-                           (coh_dffVisTime*cost_vis_time)+
-                           (coh_rate*cost_rte)
-                           )    
+                cost = sol_fitness
                 #    print(cost)
                 
                                 ###################################################
@@ -438,8 +447,11 @@ for city in cities:
                                 ###################################################  
                 tags = 'test'
                 comment = 'test'
-                
+                plan_type_id = tag_cat_id if tag_cat_id==0 else 311 
+                plan_tag_cat = tag_cat_id
                 query_plan = '''insert into plan_plan (city_id,
+                                                       type_id,
+                                                       tag_category_id,
                 									   present_id,
                 									   "coh_fullTime",
                 									   "coh_lengthTime",
@@ -455,22 +467,22 @@ for city in cities:
                 									   dist_len,
                 									   points_len,
                 									   duration_len,
-                									   tags,
                 									   comment,
                                                        day,
                                                        "all_days")
-                                 values ({0}, {1}, 
-                                         {2}, {3}, {4}, {5},
-                                         {6}, {7}, {8}, {9},{10},
-                                         {11}, {12},
-                                         {13}, {14}, {15}, 
-                                         {16}, {17}, {18},{19}) 
-                               '''.format(city, "'"+str(present_id)+"'",
+                                 values ({}, {}, {},
+                                         {}, {}, {}, {},
+                                         {}, {}, {}, {},{},
+                                         {}, {},
+                                         {}, {}, {}, 
+                                         {}, {}, {},{}) 
+                               '''.format(city, plan_type_id, plan_tag_cat,
+                                         "'"+str(present_id)+"'",
                                           coh_fultm, coh_lntm, coh_cnt, coh_dffRqTime, 
                                           cost_fultm, cost_lntm, cost_cnt, cost_rq_time,cost_rte,
                                           start_time, end_time,
                                           all_dist, len_pln, all_duration,
-                                          "'"+str(tags)+"'", "'"+str(comment)+"'",
+                                          "'"+str(comment)+"'",
                                           day, days
                                           )
                 
