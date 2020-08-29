@@ -28,6 +28,7 @@ urlpatterns = [
     path('', admin.site.urls),
     path(r'jet/', include('jet.urls', 'jet')),  # Django JET URLS
     path(r'api/', include('api.urls')),
+    path('tinymce/', include('tinymce.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 urlpatterns += staticfiles_urlpatterns()

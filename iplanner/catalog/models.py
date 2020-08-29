@@ -1,5 +1,6 @@
 import math
 from django.db import models
+from tinymce.models import HTMLField
 
 
 class AspNetRoles(models.Model):
@@ -223,7 +224,7 @@ class City(models.Model):
     name = models.CharField(db_column='Name', max_length=32)
     english_name = models.CharField(db_column='EnglishName', max_length=32)
     code = models.CharField(db_column='Code', max_length=4, blank=True, null=True)
-    description = models.TextField(db_column='Description', blank=True, null=True)
+    description = HTMLField(db_column='Description', blank=True, null=True)
     when_to_visit = models.CharField(db_column='WhenToVisit', max_length=512, blank=True, null=True)
     lat = models.FloatField(db_column='Lat')
     long = models.FloatField(db_column='Long')
@@ -490,7 +491,7 @@ class Attraction(models.Model):
     english_title = models.CharField(db_column='EnglishTitle', max_length=32, blank=True, null=True)
     address = models.TextField(db_column='Address', blank=True, null=True)
     cost = models.CharField(db_column='Cost', max_length=32, blank=True, null=True)
-    description = models.TextField(db_column='Description', blank=True, null=True)
+    description = HTMLField(db_column='Description', blank=True, null=True)
     when_to_visit = models.CharField(db_column='WhenToVisit', max_length=512, blank=True, null=True)
     lat = models.FloatField(db_column='Lat', blank=True, null=True)
     long = models.FloatField(db_column='Long', blank=True, null=True)
@@ -502,7 +503,7 @@ class Attraction(models.Model):
     rate = models.FloatField(db_column='Rate', blank=True, null=True)
     iplanner_rate = models.FloatField(db_column='iPlannerRate', blank=True, null=True)
     user_rate = models.FloatField(db_column='UserRate', blank=True, null=True)
-    external_id = models.TextField(db_column='ExternalId', blank=True, null=True)
+    external_id = models.CharField(db_column='ExternalId', max_length=100, blank=True, null=True)
 
     class Meta:
         managed = True
@@ -698,6 +699,7 @@ class Event(models.Model):
     url_key = models.CharField(db_column='UrlKey', max_length=200, blank=True, null=True)
     base_url = models.CharField(db_column='BaseUrl', max_length=200, blank=True, null=True)
     image = models.TextField(db_column='Image', blank=True, null=True)
+    image_loc = models.ImageField(db_column='Image_loc', blank=True, null=True)
     full_title = models.CharField(db_column='FullTitle', max_length=500, blank=True, null=True)
     english_title = models.CharField(db_column='EnglishTitle', max_length=32)
     address = models.CharField(db_column='Address', max_length=200, blank=True, null=True)
