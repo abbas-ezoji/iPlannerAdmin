@@ -24,7 +24,7 @@ numpy-indexed==0.3.5
 oauth2client==4.1.3
 ortools==7.4.7247
 pandas==1.0.1
-Pillow==7.0.0
+Pillow==8.1.1
 protobuf==3.10.0
 psycopg2==2.8.4
 pyasn1==0.4.8
